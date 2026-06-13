@@ -1,0 +1,879 @@
+cat > /mnt/user-data/outputs/smartvalidate-enhanced.html << 'HTMLEOF'
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartValidate — Enhanced Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0f1117;--bg2:#161b27;--bg3:#1e2535;
+      --border:rgba(255,255,255,0.08);--border2:rgba(255,255,255,0.14);
+      --text:#f1f5f9;--muted:#94a3b8;--hint:#64748b;
+      --purple:#7c3aed;--purple2:#a78bfa;--purple3:#ede9fe;
+      --teal:#0d9488;--teal2:#5eead4;
+      --green:#16a34a;--green2:#4ade80;
+      --red:#dc2626;--red2:#f87171;
+      --amber:#d97706;--amber2:#fbbf24;
+      --blue:#2563eb;--blue2:#60a5fa;
+      --orange:#ea580c;--orange2:#fb923c;
+      --radius:10px;--radius-lg:16px;
+    }
+    body { font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden; }
+    .orb { position:fixed;border-radius:50%;filter:blur(140px);opacity:.18;pointer-events:none;z-index:0; }
+    .orb1{width:500px;height:500px;background:#7c3aed;top:-200px;left:-150px;}
+    .orb2{width:400px;height:400px;background:#0d9488;bottom:-150px;right:-100px;}
+    .orb3{width:300px;height:300px;background:#2563eb;top:40%;left:50%;}
+    .wrap{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:0 24px;}
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:22px 0;border-bottom:1px solid var(--border);}
+    .brand{display:flex;align-items:center;gap:12px;text-decoration:none;}
+    .brand-icon{width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,var(--purple),var(--teal));display:flex;align-items:center;justify-content:center;font-size:20px;color:white;}
+    .brand-name{font-size:16px;font-weight:600;color:var(--text);}
+    .brand-name span{color:var(--purple2);}
+    .nav{display:flex;gap:8px;align-items:center;}
+    .nav-link{padding:8px 16px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:13px;font-weight:500;cursor:pointer;transition:all .18s;font-family:inherit;}
+    .nav-link:hover{background:var(--bg3);color:var(--text);}
+    .nav-cta{background:var(--purple);color:white;border-color:transparent;}
+    .nav-cta:hover{background:#6d28d9;}
+    .view{display:none;}
+    .view.active{display:block;animation:fadeUp .3s ease;}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+    /* LANDING */
+    .hero{text-align:center;padding:80px 24px 70px;}
+    .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;border-radius:999px;border:1px solid rgba(124,58,237,.4);background:rgba(124,58,237,.12);color:var(--purple2);font-size:12px;font-weight:600;letter-spacing:.04em;margin-bottom:28px;text-transform:uppercase;}
+    .hero h1{font-size:clamp(32px,5vw,56px);font-weight:700;line-height:1.15;letter-spacing:-1px;margin-bottom:22px;}
+    .hero h1 em{font-style:normal;color:var(--purple2);}
+    .hero p{font-size:17px;color:var(--muted);max-width:520px;margin:0 auto 36px;line-height:1.75;}
+    .hero-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .btn-primary{padding:13px 28px;border-radius:var(--radius);border:none;background:var(--purple);color:white;font-size:15px;font-weight:600;cursor:pointer;transition:all .18s;font-family:inherit;display:flex;align-items:center;gap:8px;}
+    .btn-primary:hover{background:#6d28d9;transform:translateY(-2px);}
+    .btn-secondary{padding:13px 28px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--text);font-size:15px;font-weight:500;cursor:pointer;transition:all .18s;font-family:inherit;display:flex;align-items:center;gap:8px;}
+    .btn-secondary:hover{background:var(--bg3);transform:translateY(-2px);}
+    .stat-strip{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin:0 0 60px;}
+    .stat-cell{padding:28px 20px;text-align:center;border-right:1px solid var(--border);background:var(--bg2);}
+    .stat-cell:last-child{border-right:none;}
+    .stat-cell .num{font-size:32px;font-weight:700;color:var(--purple2);}
+    .stat-cell .lbl{font-size:12px;color:var(--muted);margin-top:4px;}
+    .land-section{margin-bottom:60px;}
+    .section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--purple2);margin-bottom:10px;}
+    .section-h{font-size:28px;font-weight:700;margin-bottom:10px;}
+    .section-sub{font-size:15px;color:var(--muted);line-height:1.7;max-width:560px;}
+    .feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:30px;}
+    .feat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;transition:border-color .2s,transform .2s;}
+    .feat-card:hover{border-color:var(--border2);transform:translateY(-3px);}
+    .feat-card.hi{border-color:rgba(124,58,237,.35);background:rgba(124,58,237,.07);}
+    .feat-card.hi-orange{border-color:rgba(234,88,12,.35);background:rgba(234,88,12,.07);}
+    .feat-icon{width:40px;height:40px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;}
+    .ic-purple{background:rgba(124,58,237,.18);color:var(--purple2);}
+    .ic-teal{background:rgba(13,148,136,.18);color:var(--teal2);}
+    .ic-amber{background:rgba(217,119,6,.18);color:var(--amber2);}
+    .ic-red{background:rgba(220,38,38,.18);color:var(--red2);}
+    .ic-blue{background:rgba(37,99,235,.18);color:var(--blue2);}
+    .ic-green{background:rgba(22,163,74,.18);color:var(--green2);}
+    .ic-orange{background:rgba(234,88,12,.18);color:var(--orange2);}
+    .feat-card h3{font-size:14px;font-weight:600;margin-bottom:8px;}
+    .feat-card p{font-size:13px;color:var(--muted);line-height:1.6;}
+    .how-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-top:30px;border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+    .how-step{padding:28px 20px;text-align:center;border-right:1px solid var(--border);background:var(--bg2);}
+    .how-step:last-child{border-right:none;}
+    .step-num{width:42px;height:42px;border-radius:50%;border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px;font-size:15px;font-weight:700;color:var(--purple2);}
+    .how-step h4{font-size:13px;font-weight:600;margin-bottom:6px;}
+    .how-step p{font-size:12px;color:var(--muted);line-height:1.5;}
+    .threat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:24px;}
+    .threat-row{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);}
+    .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .dot-r{background:var(--red2);}
+    .dot-a{background:var(--amber2);}
+    .dot-g{background:var(--green2);}
+    .dot-o{background:var(--orange2);}
+    .threat-row span{font-size:13px;flex:1;}
+    .badge-blocked{background:rgba(220,38,38,.15);color:var(--red2);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;}
+    .badge-active{background:rgba(22,163,74,.15);color:var(--green2);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;}
+    .badge-bot{background:rgba(234,88,12,.15);color:var(--orange2);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;}
+    .tech-pills{display:flex;flex-wrap:wrap;gap:8px;margin-top:20px;}
+    .tech-pill{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:999px;border:1px solid var(--border2);background:var(--bg2);font-size:12px;color:var(--muted);font-weight:500;}
+    .cta-block{background:var(--bg2);border:1px solid rgba(124,58,237,.35);border-radius:var(--radius-lg);padding:50px 40px;text-align:center;}
+    .cta-block h2{font-size:28px;font-weight:700;margin-bottom:12px;}
+    .cta-block p{font-size:15px;color:var(--muted);margin-bottom:28px;}
+    .cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap;}
+    .land-footer{border-top:1px solid var(--border);padding:28px 0;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:var(--muted);}
+    .land-footer a{color:var(--muted);text-decoration:none;margin-left:20px;}
+    .land-footer a:hover{color:var(--text);}
+    /* APP */
+    .app-tabs{display:flex;gap:8px;padding:22px 0;border-bottom:1px solid var(--border);margin-bottom:28px;}
+    .tab-btn{padding:9px 20px;border-radius:var(--radius);border:1px solid var(--border2);background:transparent;color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;transition:all .18s;font-family:inherit;display:flex;align-items:center;gap:7px;}
+    .tab-btn:hover{background:var(--bg3);color:var(--text);}
+    .tab-btn.active{background:var(--purple);color:white;border-color:transparent;}
+    .tab-pane{display:none;}
+    .tab-pane.active{display:block;animation:fadeUp .25s ease;}
+    .glass{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:28px;}
+    .pane-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+    .pane-head h2{font-size:18px;font-weight:600;}
+    .prog-info{font-size:12px;color:var(--muted);}
+    .prog-track{height:4px;background:var(--border);border-radius:2px;margin-bottom:28px;overflow:hidden;}
+    .prog-fill{height:100%;background:var(--purple);border-radius:2px;transition:width .3s;}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+    .field{display:flex;flex-direction:column;gap:7px;}
+    .field.full{grid-column:1/-1;}
+    .field label{font-size:13px;font-weight:500;color:var(--muted);display:flex;align-items:center;gap:5px;}
+    .req{color:var(--red2);font-size:10px;}
+    .field input,.field select{padding:11px 14px;border-radius:var(--radius);border:1px solid var(--border2);background:var(--bg3);color:var(--text);font-size:14px;font-family:inherit;outline:none;transition:border-color .15s,box-shadow .15s;}
+    .field input:focus,.field select:focus{border-color:var(--purple);box-shadow:0 0 0 3px rgba(124,58,237,.2);}
+    .field input.v-ok{border-color:var(--green);}
+    .field input.v-err,.field select.v-err{border-color:var(--red2);}
+    .field input.v-warn{border-color:var(--orange2);}
+    .field select option{background:var(--bg3);}
+    .hint{font-size:11.5px;min-height:15px;}
+    .hint.ok{color:var(--green2);}
+    .hint.err{color:var(--red2);}
+    .hint.warn{color:var(--orange2);}
+    .pw-wrap{position:relative;}
+    .pw-wrap input{width:100%;padding-right:42px;}
+    .pw-toggle{position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:var(--muted);font-size:16px;display:flex;align-items:center;}
+    .str-bar{height:4px;border-radius:2px;background:var(--border2);margin-top:6px;overflow:hidden;}
+    .str-fill{height:100%;border-radius:2px;transition:width .3s,background .3s;}
+    .submit-btn{width:100%;padding:13px;margin-top:24px;border-radius:var(--radius);border:none;background:var(--purple);color:white;font-size:16px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;}
+    .submit-btn:hover{background:#6d28d9;transform:translateY(-1px);}
+    .toast{display:none;margin-top:16px;padding:13px 16px;border-radius:var(--radius);font-size:14px;font-weight:500;align-items:center;gap:10px;}
+    .toast.show{display:flex;}
+    .toast.success{background:rgba(22,163,74,.15);border:1px solid rgba(74,222,128,.25);color:var(--green2);}
+    .toast.error{background:rgba(220,38,38,.12);border:1px solid rgba(248,113,113,.25);color:var(--red2);}
+    .toast.blocked{background:rgba(217,119,6,.12);border:1px solid rgba(251,191,36,.25);color:var(--amber2);}
+    .toast.bot{background:rgba(234,88,12,.12);border:1px solid rgba(251,146,60,.25);color:var(--orange2);}
+    /* DASHBOARD */
+    .stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:22px;}
+    .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:22px;}
+    .stat-card .s-lbl{font-size:12px;color:var(--muted);margin-bottom:8px;}
+    .stat-card .s-val{font-size:28px;font-weight:700;}
+    .s-purple{color:var(--purple2);}
+    .s-green{color:var(--green2);}
+    .s-red{color:var(--red2);}
+    .s-orange{color:var(--orange2);}
+    .chart-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;margin-bottom:22px;}
+    .chart-card h3{font-size:15px;font-weight:600;margin-bottom:16px;}
+    .table-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;}
+    .table-card h3{font-size:15px;font-weight:600;margin-bottom:16px;}
+    .u-table{width:100%;border-collapse:collapse;font-size:13px;}
+    .u-table th{color:var(--muted);font-weight:500;padding:8px 12px;border-bottom:1px solid var(--border);text-align:left;}
+    .u-table td{padding:11px 12px;border-bottom:1px solid var(--border);}
+    .u-table tr:last-child td{border-bottom:none;}
+    .u-table tbody tr:hover{background:var(--bg3);}
+    .badge-ok{background:rgba(22,163,74,.15);color:var(--green2);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;}
+    .badge-fail{background:rgba(220,38,38,.12);color:var(--red2);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;}
+    .badge-bot-tag{background:rgba(234,88,12,.12);color:var(--orange2);font-size:11px;font-weight:600;padding:3px 9px;border-radius:999px;}
+    .empty-row{color:var(--muted);text-align:center;padding:32px;}
+    /* SECURITY */
+    .sec-top{display:flex;gap:20px;margin-bottom:22px;}
+    .ring-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;display:flex;gap:24px;align-items:center;flex:1;}
+    .ring-wrap{position:relative;width:96px;height:96px;flex-shrink:0;}
+    .ring-wrap svg{width:96px;height:96px;}
+    .ring-center{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .ring-pct{font-size:20px;font-weight:700;color:var(--purple2);}
+    .ring-sub{font-size:10px;color:var(--muted);}
+    .sec-rows{flex:1;}
+    .sec-row{display:flex;justify-content:space-between;align-items:center;padding:7px 0;font-size:13px;border-bottom:1px solid var(--border);}
+    .sec-row:last-child{border-bottom:none;}
+    .sec-row .ok{color:var(--green2);font-weight:500;}
+    .sec-row .warn{color:var(--orange2);font-weight:500;}
+    .log-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:24px;}
+    .log-card h3{font-size:15px;font-weight:600;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;}
+    .log-count{font-size:12px;color:var(--muted);font-weight:400;}
+    .log-item{display:flex;align-items:flex-start;gap:12px;padding:12px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--border);margin-bottom:10px;}
+    .log-icon{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+    .li-threat{background:rgba(220,38,38,.18);color:var(--red2);}
+    .li-pass{background:rgba(22,163,74,.18);color:var(--green2);}
+    .li-bot{background:rgba(234,88,12,.18);color:var(--orange2);}
+    .log-title{font-size:13px;font-weight:500;}
+    .log-detail{font-size:12px;color:var(--muted);margin-top:2px;word-break:break-all;}
+    .log-time{font-size:11px;color:var(--hint);margin-top:3px;}
+    .no-logs{color:var(--muted);text-align:center;padding:36px;font-size:14px;}
+    /* NEW: Bot warning banner */
+    .bot-banner{display:none;background:rgba(234,88,12,.1);border:1px solid rgba(251,146,60,.3);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:13px;color:var(--orange2);align-items:center;gap:8px;}
+    .bot-banner.show{display:flex;}
+    @media(max-width:800px){.feat-grid{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.field.full{grid-column:1}.stats-row{grid-template-columns:1fr 1fr}.threat-grid{grid-template-columns:1fr}.how-grid{grid-template-columns:1fr 1fr}.stat-strip{grid-template-columns:1fr 1fr}.sec-top{flex-direction:column}}
+    @media(max-width:560px){.stats-row{grid-template-columns:1fr}.stat-strip{grid-template-columns:1fr}.how-grid{grid-template-columns:1fr}.nav{display:none}.hero h1{font-size:28px}}
+  </style>
+</head>
+<body>
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+<div class="orb orb3"></div>
+
+<div class="wrap">
+  <div class="topbar">
+    <a class="brand" href="#" onclick="showView('landing');return false;">
+      <div class="brand-icon">&#9670;</div>
+      <span class="brand-name">Smart<span>Validate</span></span>
+    </a>
+    <div class="nav">
+      <button class="nav-link" onclick="showView('landing')">Home</button>
+      <button class="nav-link" onclick="showView('app');switchTab('form')">Features</button>
+      <button class="nav-link" onclick="showView('app');switchTab('security')">Security</button>
+      <button class="nav-link" onclick="showView('app');switchTab('dashboard')">Dashboard</button>
+      <button class="nav-link nav-cta" onclick="showView('app');switchTab('form')">&#10133; Register</button>
+    </div>
+  </div>
+</div>
+
+<!-- LANDING -->
+<div id="view-landing" class="view active">
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-badge">&#9670; Enhanced bot & threat detection</div>
+      <h1>Validate smarter.<br>Block bots <em>automatically.</em></h1>
+      <p>Now with bot name detection, duplicate mobile blocking, fake address detection, XSS & SQL injection prevention, and full security monitoring.</p>
+      <div class="hero-btns">
+        <button class="btn-primary" onclick="showView('app');switchTab('form')">&#10133; Start registering</button>
+        <button class="btn-secondary" onclick="showView('app');switchTab('security')">&#9632; View security</button>
+      </div>
+    </div>
+    <div class="stat-strip">
+      <div class="stat-cell"><div class="num">10</div><div class="lbl">Security checks</div></div>
+      <div class="stat-cell"><div class="num">Bot</div><div class="lbl">Name detection</div></div>
+      <div class="stat-cell"><div class="num">Dupe</div><div class="lbl">Mobile blocking</div></div>
+      <div class="stat-cell"><div class="num">Live</div><div class="lbl">Real-time feedback</div></div>
+    </div>
+    <div class="land-section">
+      <div class="section-eyebrow">Enhanced security features</div>
+      <div class="section-h">Three new layers of protection</div>
+      <div class="feat-grid">
+        <div class="feat-card hi-orange">
+          <div class="feat-icon ic-orange">&#129302;</div>
+          <h3>Bot name detection</h3>
+          <p>Names like "testuser", "bot123", "admin", "asdfgh" or random keyboard mashing are flagged and blocked as bot activity.</p>
+        </div>
+        <div class="feat-card hi-orange">
+          <div class="feat-icon ic-orange">&#128242;</div>
+          <h3>Duplicate mobile blocking</h3>
+          <p>If the same phone number was already used to register, the second attempt is blocked. One number, one account.</p>
+        </div>
+        <div class="feat-card hi-orange">
+          <div class="feat-icon ic-orange">&#128205;</div>
+          <h3>Fake address detection</h3>
+          <p>Addresses like "test", "abc", "1234", "xxxx", or random gibberish are rejected. Only real-looking addresses pass.</p>
+        </div>
+        <div class="feat-card hi">
+          <div class="feat-icon ic-purple">&#9650;</div>
+          <h3>Live inline validation</h3>
+          <p>Every field validates as you type. Green ticks and red hints appear instantly — no waiting for submit.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon ic-red">&#9762;</div>
+          <h3>XSS prevention</h3>
+          <p>Script injection, event handlers, and malicious HTML are caught before they reach any backend.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-icon ic-amber">&#9888;</div>
+          <h3>SQL injection blocking</h3>
+          <p>SELECT, DROP, DELETE, UNION and comment-based attacks are flagged and blocked at input.</p>
+        </div>
+      </div>
+    </div>
+    <div class="land-section">
+      <div class="section-eyebrow">What gets caught now</div>
+      <div class="section-h">Expanded threat coverage</div>
+      <div class="threat-grid">
+        <div class="threat-row"><span class="dot dot-o"></span><span>Bot names — test, admin, bot123, asdf</span><span class="badge-bot">Bot blocked</span></div>
+        <div class="threat-row"><span class="dot dot-o"></span><span>Keyboard mash — qwerty, zxcv, aaaa</span><span class="badge-bot">Bot blocked</span></div>
+        <div class="threat-row"><span class="dot dot-o"></span><span>Duplicate mobile number reuse</span><span class="badge-bot">Bot blocked</span></div>
+        <div class="threat-row"><span class="dot dot-o"></span><span>Fake addresses — test, abc, 1234, xxxx</span><span class="badge-bot">Bot blocked</span></div>
+        <div class="threat-row"><span class="dot dot-r"></span><span>SQL keywords — SELECT, DROP, DELETE</span><span class="badge-blocked">Blocked</span></div>
+        <div class="threat-row"><span class="dot dot-r"></span><span>XSS — &lt;script&gt;, javascript:, onerror=</span><span class="badge-blocked">Blocked</span></div>
+        <div class="threat-row"><span class="dot dot-r"></span><span>Comment injection — -- and ; sequences</span><span class="badge-blocked">Blocked</span></div>
+        <div class="threat-row"><span class="dot dot-g"></span><span>Input sanitization on all 7 fields</span><span class="badge-active">Active</span></div>
+      </div>
+    </div>
+    <div class="cta-block">
+      <h2>Ready to test the new security?</h2>
+      <p>Try typing "testuser" as a name, use the same mobile twice, or enter "abc" as an address.</p>
+      <div class="cta-btns">
+        <button class="btn-primary" onclick="showView('app');switchTab('form')">&#10133; Open registration form</button>
+        <button class="btn-secondary" onclick="showView('app');switchTab('security')">&#9632; View security log</button>
+      </div>
+    </div>
+    <div class="land-footer">
+      <span>SmartValidate &mdash; Enhanced Security Edition &copy; 2026</span>
+      <div>
+        <a href="#" onclick="showView('app');switchTab('security');return false;">Security</a>
+        <a href="#" onclick="showView('app');switchTab('dashboard');return false;">Dashboard</a>
+        <a href="#" onclick="showView('app');switchTab('form');return false;">Register</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- APP VIEW -->
+<div id="view-app" class="view">
+  <div class="wrap">
+    <div class="app-tabs">
+      <button class="tab-btn active" id="tbtn-form" onclick="switchTab('form')">&#9670; Registration</button>
+      <button class="tab-btn" id="tbtn-dashboard" onclick="switchTab('dashboard')">&#9632; Dashboard</button>
+      <button class="tab-btn" id="tbtn-security" onclick="switchTab('security')">&#9646; Security</button>
+      <button class="tab-btn" style="margin-left:auto;" onclick="showView('landing')">&#8592; Back to home</button>
+    </div>
+
+    <!-- REGISTRATION TAB -->
+    <div id="tab-form" class="tab-pane active">
+      <div class="glass">
+        <div class="pane-head">
+          <h2>New registration</h2>
+          <span class="prog-info" id="prog-info">0 of 7 fields complete</span>
+        </div>
+        <div class="prog-track"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+        <div id="bot-banner" class="bot-banner">&#129302; Bot-like activity detected — please enter real information</div>
+        <div class="form-grid">
+          <div class="field">
+            <label>Full name <span class="req">required</span></label>
+            <input id="f-name" type="text" placeholder="e.g. Priya Sharma" oninput="lv('f-name')">
+            <span class="hint" id="h-name"></span>
+          </div>
+          <div class="field">
+            <label>Email address <span class="req">required</span></label>
+            <input id="f-email" type="text" placeholder="you@example.com" oninput="lv('f-email')">
+            <span class="hint" id="h-email"></span>
+          </div>
+          <div class="field">
+            <label>Mobile number <span class="req">required</span></label>
+            <input id="f-mobile" type="text" placeholder="+91 98765 43210" oninput="lv('f-mobile')">
+            <span class="hint" id="h-mobile"></span>
+          </div>
+          <div class="field">
+            <label>Password <span class="req">required</span></label>
+            <div class="pw-wrap">
+              <input id="f-pw" type="password" placeholder="Min 8 characters" oninput="lv('f-pw')">
+              <button class="pw-toggle" onclick="togglePw()" type="button">&#128065;</button>
+            </div>
+            <div class="str-bar"><div class="str-fill" id="str-fill" style="width:0%;background:var(--red2)"></div></div>
+            <span class="hint" id="h-pw"></span>
+          </div>
+          <div class="field">
+            <label>Date of birth <span class="req">required</span></label>
+            <input id="f-dob" type="date" oninput="lv('f-dob')">
+            <span class="hint" id="h-dob"></span>
+          </div>
+          <div class="field">
+            <label>Gender <span class="req">required</span></label>
+            <select id="f-gender" onchange="lv('f-gender')">
+              <option value="">Select…</option>
+              <option>Male</option><option>Female</option>
+              <option>Non-binary</option><option>Prefer not to say</option>
+            </select>
+            <span class="hint" id="h-gender"></span>
+          </div>
+          <div class="field full">
+            <label>Address <span class="req">required</span></label>
+            <input id="f-addr" type="text" placeholder="Street, City, State" oninput="lv('f-addr')">
+            <span class="hint" id="h-addr"></span>
+          </div>
+        </div>
+        <button class="submit-btn" onclick="submitForm()">Submit registration</button>
+        <div id="toast" class="toast"></div>
+      </div>
+    </div>
+
+    <!-- DASHBOARD TAB -->
+    <div id="tab-dashboard" class="tab-pane">
+      <div class="stats-row">
+        <div class="stat-card"><div class="s-lbl">Total submissions</div><div class="s-val s-purple" id="d-total">0</div></div>
+        <div class="stat-card"><div class="s-lbl">Valid registrations</div><div class="s-val s-green" id="d-valid">0</div></div>
+        <div class="stat-card"><div class="s-lbl">Threats blocked</div><div class="s-val s-red" id="d-threats">0</div></div>
+        <div class="stat-card"><div class="s-lbl">Bots blocked</div><div class="s-val s-orange" id="d-bots">0</div></div>
+        <div class="stat-card"><div class="s-lbl">Security score</div><div class="s-val s-green" id="d-score">100%</div></div>
+      </div>
+      <div class="chart-card">
+        <h3>Submission history</h3>
+        <div style="height:200px"><canvas id="bar-chart"></canvas></div>
+      </div>
+      <div class="table-card">
+        <h3>Registered users</h3>
+        <table class="u-table">
+          <thead><tr><th>Name</th><th>Email</th><th>Mobile</th><th>Status</th><th>Reason</th><th>Time</th></tr></thead>
+          <tbody id="u-tbody"><tr><td colspan="6" class="empty-row">No registrations yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SECURITY TAB -->
+    <div id="tab-security" class="tab-pane">
+      <div class="sec-top">
+        <div class="ring-card">
+          <div class="ring-wrap">
+            <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="48" cy="48" r="38" fill="none" stroke="rgba(255,255,255,0.08)" stroke-width="9"/>
+              <circle id="ring-arc" cx="48" cy="48" r="38" fill="none" stroke="#a78bfa"
+                stroke-width="9" stroke-dasharray="238.76 238.76" stroke-dashoffset="0"
+                stroke-linecap="round" transform="rotate(-90 48 48)"/>
+            </svg>
+            <div class="ring-center">
+              <span class="ring-pct" id="ring-pct">100%</span>
+              <span class="ring-sub">score</span>
+            </div>
+          </div>
+          <div class="sec-rows">
+            <div class="sec-row"><span>SQL injection checks</span><span class="ok">&#10003; Active</span></div>
+            <div class="sec-row"><span>XSS prevention</span><span class="ok">&#10003; Active</span></div>
+            <div class="sec-row"><span>Bot name detection</span><span class="ok">&#10003; Active</span></div>
+            <div class="sec-row"><span>Duplicate mobile blocking</span><span class="ok">&#10003; Active</span></div>
+            <div class="sec-row"><span>Fake address detection</span><span class="ok">&#10003; Active</span></div>
+            <div class="sec-row"><span>Threats blocked</span><span id="s-blocked">0</span></div>
+            <div class="sec-row"><span>Bots blocked</span><span id="s-bots" style="color:var(--orange2)">0</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="log-card">
+        <h3>Event log <span class="log-count" id="log-count">0 events</span></h3>
+        <div id="log-list">
+          <div class="no-logs">No security events recorded yet.<br>Submit a form to see activity here.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ── STATE ── */
+var appState = { users: [], threats: 0, bots: 0, logs: [], usedMobiles: [] };
+var chartLabels = [], chartValid = [], chartBlock = [];
+var barChart = null;
+
+/* ── VIEW / TAB SWITCHERS ── */
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById('view-' + id).classList.add('active');
+  window.scrollTo(0, 0);
+  if (id === 'app' && !barChart) initChart();
+}
+function switchTab(id) {
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + id).classList.add('active');
+  var btn = document.getElementById('tbtn-' + id);
+  if (btn) btn.classList.add('active');
+}
+
+/* ══════════════════════════════════════
+   BOT NAME DETECTION
+   Checks for: known bot keywords, random
+   keyboard patterns, repeated chars,
+   all-numbers, too short single word
+══════════════════════════════════════ */
+function isBotName(name) {
+  var n = name.trim().toLowerCase();
+
+  // Known bot/test keywords
+  var botKeywords = [
+    'test','bot','admin','user','demo','fake','null','none','guest',
+    'anonymous','anon','temp','tmp','placeholder','sample','example',
+    'foobar','foo','bar','baz','qux','lorem','ipsum','root','system',
+    'default','name','firstname','lastname','fullname','unknown','xyz',
+    'abc','abcd','abcde','abcdef','random','dummy','noname','nobody'
+  ];
+  if (botKeywords.includes(n)) return 'Name is a known bot/test keyword';
+
+  // Contains bot keyword as a word
+  for (var k of botKeywords) {
+    if (new RegExp('\\b' + k + '\\b').test(n)) return 'Name contains bot keyword "' + k + '"';
+  }
+
+  // All same characters (aaaa, xxxx, 1111)
+  if (/^(.)\1{2,}/.test(n.replace(/\s/g, ''))) return 'Name is repeated characters (bot pattern)';
+
+  // Keyboard row patterns
+  var keyPatterns = ['qwerty','qwert','asdfg','asdf','zxcvb','zxcv','qazwsx','12345','123456','1234'];
+  for (var p of keyPatterns) {
+    if (n.replace(/\s/g,'').includes(p)) return 'Name matches keyboard pattern (bot pattern)';
+  }
+
+  // All digits
+  if (/^\d+$/.test(n.replace(/\s/g,''))) return 'Name cannot be all numbers';
+
+  // No vowels (gibberish like "xkcd", "bcdf") — if longer than 4 chars
+  var letters = n.replace(/[^a-z]/g,'');
+  if (letters.length > 4 && !/[aeiou]/.test(letters)) return 'Name appears to be gibberish (no vowels)';
+
+  // Consecutive repeated pairs (aabbcc, xxyyzz)
+  if (/(.)\1(.)\2/.test(n.replace(/\s/g,''))) return 'Name contains suspicious repeated pairs';
+
+  // Name with numbers mixed in (bot123, user456)
+  if (/[a-z]{2,}\d{2,}/.test(n) || /\d{2,}[a-z]{2,}/.test(n)) return 'Name mixes letters and numbers (bot pattern)';
+
+  return null;
+}
+
+/* ══════════════════════════════════════
+   DUPLICATE MOBILE DETECTION
+   Checks the usedMobiles list
+══════════════════════════════════════ */
+function isDuplicateMobile(mobile) {
+  var digits = mobile.replace(/\D/g,'');
+  if (appState.usedMobiles.includes(digits)) return 'This mobile number is already registered';
+  return null;
+}
+
+/* ══════════════════════════════════════
+   FAKE ADDRESS DETECTION
+   Checks for: too short, only numbers,
+   known fake keywords, no real structure
+══════════════════════════════════════ */
+function isFakeAddress(addr) {
+  var a = addr.trim().toLowerCase();
+
+  // Too short
+  if (a.length < 8) return 'Address is too short to be real';
+
+  // All same characters
+  if (/^(.)\1{3,}/.test(a.replace(/\s/g,''))) return 'Address is repeated characters (fake)';
+
+  // Keyboard patterns
+  var keyPats = ['qwerty','asdfg','zxcvb','12345','abcde'];
+  for (var p of keyPats) {
+    if (a.replace(/\s/g,'').includes(p)) return 'Address matches keyboard pattern (fake)';
+  }
+
+  // Known fake keywords
+  var fakeWords = [
+    'test','fake','demo','null','none','placeholder','sample',
+    'example','lorem','ipsum','random','dummy','nope','blah',
+    'unknown','abc','abcd','abcde','xyz','xxxx','yyyy','zzzz',
+    'address','street','home','here','somewhere','nowhere'
+  ];
+  var words = a.split(/\s+/);
+  // If address is ONE word and it's a fake keyword
+  if (words.length === 1 && fakeWords.includes(words[0])) return 'Address looks fake ("' + words[0] + '" is not a real address)';
+
+  // If entire address only contains fake keywords
+  var allFake = words.every(w => fakeWords.includes(w.replace(/[^a-z]/g,'')));
+  if (allFake && words.length <= 3) return 'Address contains only placeholder words';
+
+  // All digits (1234, 000000)
+  if (/^\d+$/.test(a.replace(/\s/g,''))) return 'Address cannot be only numbers';
+
+  // No letters at all
+  if (!/[a-z]/.test(a)) return 'Address must contain letters';
+
+  // No vowels in alphabetic part (gibberish)
+  var letters = a.replace(/[^a-z]/g,'');
+  if (letters.length > 6 && !/[aeiou]/.test(letters)) return 'Address appears to be gibberish';
+
+  return null;
+}
+
+/* ══════════════════════════════════════
+   SQL + XSS SECURITY CHECK
+══════════════════════════════════════ */
+function checkSecurity(vals) {
+  var sql = /(\bselect\b|\binsert\b|\bdrop\b|\bdelete\b|\bunion\b|--|;)/i;
+  var xss = /<script|javascript:|onerror=|onload=|<iframe/i;
+  for (var i = 0; i < vals.length; i++) {
+    if (sql.test(vals[i])) return { type: 'threat', msg: 'SQL injection attempt' };
+    if (xss.test(vals[i])) return { type: 'threat', msg: 'XSS attack attempt' };
+  }
+  return null;
+}
+
+/* ── VALIDATION RULES ── */
+var RULES = {
+  'f-name': v => {
+    var s = v.trim();
+    if (!s) return { ok: false, msg: 'Name is required' };
+    if (s.length < 2) return { ok: false, msg: 'At least 2 characters' };
+    if (!/^[a-zA-Z\s.\-']+$/.test(s)) return { ok: false, msg: 'Letters and spaces only' };
+    var botCheck = isBotName(s);
+    if (botCheck) return { ok: false, msg: '&#129302; ' + botCheck, isBot: true };
+    return { ok: true, msg: '&#10003; Looks good' };
+  },
+  'f-email': v => {
+    if (!v.trim()) return { ok: false, msg: 'Email is required' };
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return { ok: false, msg: 'Enter a valid email address' };
+    return { ok: true, msg: '&#10003; Valid email' };
+  },
+  'f-mobile': v => {
+    var d = v.replace(/\D/g,'');
+    if (!v.trim()) return { ok: false, msg: 'Mobile number is required' };
+    if (d.length < 7 || d.length > 15) return { ok: false, msg: '7–15 digits required' };
+    var dupCheck = isDuplicateMobile(v);
+    if (dupCheck) return { ok: false, msg: '&#128242; ' + dupCheck, isBot: true };
+    return { ok: true, msg: '&#10003; Valid number' };
+  },
+  'f-pw': v => {
+    if (!v) return { ok: false, msg: 'Password is required' };
+    if (v.length < 8) return { ok: false, msg: 'Minimum 8 characters' };
+    var score = 0;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    var labels = ['Weak','Moderate','Strong','Very strong'];
+    var colors = ['var(--red2)','var(--amber2)','var(--green2)','var(--teal2)'];
+    var pcts   = [25,50,75,100];
+    var fill = document.getElementById('str-fill');
+    fill.style.width = pcts[score] + '%';
+    fill.style.background = colors[score];
+    return { ok: score >= 1, msg: labels[score] };
+  },
+  'f-dob': v => {
+    if (!v) return { ok: false, msg: 'Date of birth is required' };
+    var age = (new Date() - new Date(v)) / 31557600000;
+    if (age < 13) return { ok: false, msg: 'Must be at least 13 years old' };
+    if (age > 120) return { ok: false, msg: 'Enter a valid date' };
+    return { ok: true, msg: '&#10003; Age: ' + Math.floor(age) + ' years' };
+  },
+  'f-gender': v => {
+    if (!v) return { ok: false, msg: 'Please select a gender' };
+    return { ok: true, msg: '&#10003; Selected' };
+  },
+  'f-addr': v => {
+    if (!v.trim()) return { ok: false, msg: 'Address is required' };
+    if (v.trim().length < 5) return { ok: false, msg: 'Enter your full address' };
+    var fakeCheck = isFakeAddress(v);
+    if (fakeCheck) return { ok: false, msg: '&#128205; ' + fakeCheck, isBot: true };
+    return { ok: true, msg: '&#10003; Looks good' };
+  }
+};
+
+var FIELD_IDS = ['f-name','f-email','f-mobile','f-pw','f-dob','f-gender','f-addr'];
+
+/* ── LIVE VALIDATE ── */
+function lv(id) {
+  var el   = document.getElementById(id);
+  var key  = id.split('-')[1];
+  var hint = document.getElementById('h-' + key);
+  var v    = el.value;
+  var r    = RULES[id](v);
+  el.classList.remove('v-ok','v-err','v-warn');
+  if (v.length > 0) {
+    if (r.ok) el.classList.add('v-ok');
+    else if (r.isBot) el.classList.add('v-warn');
+    else el.classList.add('v-err');
+  }
+  if (hint) {
+    hint.innerHTML = v.length > 0 ? r.msg : '';
+    hint.className = 'hint ' + (r.ok ? 'ok' : r.isBot ? 'warn' : 'err');
+  }
+  // Show/hide bot banner
+  var anyBot = FIELD_IDS.some(fid => {
+    var el2 = document.getElementById(fid);
+    return el2 && el2.value.length > 0 && RULES[fid](el2.value).isBot;
+  });
+  document.getElementById('bot-banner').classList.toggle('show', anyBot);
+  updateProgress();
+}
+
+function updateProgress() {
+  var done = FIELD_IDS.filter(id => {
+    var el = document.getElementById(id);
+    return el && el.value.length > 0 && RULES[id](el.value).ok;
+  }).length;
+  document.getElementById('prog-info').textContent = done + ' of ' + FIELD_IDS.length + ' fields complete';
+  document.getElementById('prog-fill').style.width = Math.round(done / FIELD_IDS.length * 100) + '%';
+}
+
+function togglePw() {
+  var inp = document.getElementById('f-pw');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+
+/* ── SUBMIT ── */
+function submitForm() {
+  FIELD_IDS.forEach(lv);
+  var vals  = FIELD_IDS.map(id => document.getElementById(id).value);
+  var now   = new Date().toLocaleTimeString();
+  var name  = document.getElementById('f-name').value.trim();
+  var email = document.getElementById('f-email').value.trim();
+  var mobile= document.getElementById('f-mobile').value.trim();
+
+  // 1. SQL / XSS check
+  var secThreat = checkSecurity(vals);
+  if (secThreat) {
+    appState.threats++;
+    addLog('threat', secThreat.msg, email || name || 'unknown', now);
+    updateStats(); updateRing();
+    addTableRow(name||'Unknown', email||'—', mobile||'—', 'fail', secThreat.msg, now);
+    pushChart(now, 'block');
+    showToast('blocked', '&#9888; Security threat: ' + secThreat.msg);
+    return;
+  }
+
+  // 2. Bot checks
+  var nameResult   = RULES['f-name'](name);
+  var mobileResult = RULES['f-mobile'](mobile);
+  var addrResult   = RULES['f-addr'](document.getElementById('f-addr').value);
+
+  if (nameResult.isBot) {
+    appState.bots++;
+    addLog('bot', 'Bot name detected', name, now);
+    updateStats(); updateRing();
+    addTableRow(name||'Unknown', email||'—', mobile||'—', 'bot', 'Bot name: ' + name, now);
+    pushChart(now, 'bot');
+    showToast('bot', '&#129302; Bot detected: ' + nameResult.msg.replace(/&#129302;\s*/,''));
+    return;
+  }
+  if (mobileResult.isBot) {
+    appState.bots++;
+    addLog('bot', 'Duplicate mobile blocked', mobile, now);
+    updateStats(); updateRing();
+    addTableRow(name||'Unknown', email||'—', mobile||'—', 'bot', 'Duplicate mobile', now);
+    pushChart(now, 'bot');
+    showToast('bot', '&#128242; ' + mobileResult.msg.replace(/&#128242;\s*/,''));
+    return;
+  }
+  if (addrResult.isBot) {
+    appState.bots++;
+    addLog('bot', 'Fake address detected', document.getElementById('f-addr').value, now);
+    updateStats(); updateRing();
+    addTableRow(name||'Unknown', email||'—', mobile||'—', 'bot', 'Fake address', now);
+    pushChart(now, 'bot');
+    showToast('bot', '&#128205; ' + addrResult.msg.replace(/&#128205;\s*/,''));
+    return;
+  }
+
+  // 3. All fields valid?
+  var allOk = FIELD_IDS.every(id => RULES[id](document.getElementById(id).value).ok);
+  if (!allOk) {
+    showToast('error', '&#10007; Please fix the highlighted fields before submitting');
+    return;
+  }
+
+  // 4. Success
+  var digits = mobile.replace(/\D/g,'');
+  appState.usedMobiles.push(digits);
+  appState.users.push({ name, email, mobile, time: now });
+  addLog('pass', 'Registration successful', email, now);
+  addTableRow(name, email, mobile, 'ok', 'Valid', now);
+  updateStats(); updateRing();
+  pushChart(now, 'valid');
+  showToast('success', '&#10003; Registration successful — welcome, ' + name.split(' ')[0] + '!');
+  clearForm();
+}
+
+function clearForm() {
+  FIELD_IDS.forEach(id => {
+    var el = document.getElementById(id);
+    el.value = '';
+    el.className = '';
+    var key = id.split('-')[1];
+    var hint = document.getElementById('h-' + key);
+    if (hint) { hint.textContent = ''; hint.className = 'hint'; }
+  });
+  document.getElementById('str-fill').style.width = '0%';
+  document.getElementById('bot-banner').classList.remove('show');
+  updateProgress();
+}
+
+function showToast(type, html) {
+  var t = document.getElementById('toast');
+  t.className = 'toast show ' + type;
+  t.innerHTML = html;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 5000);
+}
+
+/* ── DASHBOARD ── */
+function updateStats() {
+  var total = appState.users.length + appState.threats + appState.bots;
+  document.getElementById('d-total').textContent   = total;
+  document.getElementById('d-valid').textContent   = appState.users.length;
+  document.getElementById('d-threats').textContent = appState.threats;
+  document.getElementById('d-bots').textContent    = appState.bots;
+  var bad = appState.threats + appState.bots;
+  var score = total === 0 ? 100 : Math.max(0, Math.round(100 - (bad / total) * 100));
+  document.getElementById('d-score').textContent = score + '%';
+}
+
+function addTableRow(name, email, mobile, status, reason, time) {
+  var tb = document.getElementById('u-tbody');
+  var empty = tb.querySelector('.empty-row');
+  if (empty) tb.innerHTML = '';
+  var tr = document.createElement('tr');
+  var badgeClass = status === 'ok' ? 'badge-ok' : status === 'bot' ? 'badge-bot-tag' : 'badge-fail';
+  var badgeLabel = status === 'ok' ? 'Valid' : status === 'bot' ? 'Bot' : 'Blocked';
+  tr.innerHTML =
+    '<td>' + esc(name) + '</td>' +
+    '<td>' + esc(email) + '</td>' +
+    '<td>' + esc(mobile) + '</td>' +
+    '<td><span class="' + badgeClass + '">' + badgeLabel + '</span></td>' +
+    '<td style="color:var(--muted);font-size:12px">' + esc(reason) + '</td>' +
+    '<td style="color:var(--muted);font-size:12px">' + time + '</td>';
+  tb.prepend(tr);
+}
+
+function pushChart(label, type) {
+  chartLabels.push(label);
+  chartValid.push(type === 'valid' ? 1 : 0);
+  chartBlock.push(type === 'block' ? 1 : 0);
+  // Store bots in a 3rd dataset
+  if (!window.chartBot) window.chartBot = [];
+  window.chartBot.push(type === 'bot' ? 1 : 0);
+  if (barChart) {
+    barChart.data.labels           = chartLabels.slice(-10);
+    barChart.data.datasets[0].data = chartValid.slice(-10);
+    barChart.data.datasets[1].data = chartBlock.slice(-10);
+    barChart.data.datasets[2].data = window.chartBot.slice(-10);
+    barChart.update();
+  }
+}
+
+function initChart() {
+  if (!window.chartBot) window.chartBot = [];
+  var ctx = document.getElementById('bar-chart').getContext('2d');
+  barChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: chartLabels.slice(-10),
+      datasets: [
+        { label:'Valid',   data: chartValid.slice(-10),        backgroundColor:'rgba(74,222,128,.7)',  borderRadius:5 },
+        { label:'Blocked', data: chartBlock.slice(-10),        backgroundColor:'rgba(248,113,113,.7)', borderRadius:5 },
+        { label:'Bot',     data: window.chartBot.slice(-10),   backgroundColor:'rgba(251,146,60,.7)',  borderRadius:5 }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{ position:'bottom', labels:{ color:'#94a3b8', font:{ size:12 }, boxWidth:12 } } },
+      scales:{
+        x:{ grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ color:'#94a3b8', font:{ size:11 } } },
+        y:{ grid:{ color:'rgba(255,255,255,0.05)' }, ticks:{ color:'#94a3b8', font:{ size:11 }, stepSize:1 } }
+      }
+    }
+  });
+}
+
+/* ── SECURITY ── */
+function updateRing() {
+  var total = appState.users.length + appState.threats + appState.bots;
+  var bad = appState.threats + appState.bots;
+  var score = total === 0 ? 100 : Math.max(0, Math.round(100 - (bad / total) * 100));
+  document.getElementById('ring-pct').textContent = score + '%';
+  document.getElementById('s-blocked').textContent = appState.threats;
+  document.getElementById('s-bots').textContent    = appState.bots;
+  var circ = 238.76;
+  document.getElementById('ring-arc').setAttribute('stroke-dashoffset', circ * (1 - score/100));
+  document.getElementById('ring-arc').setAttribute('stroke', score > 70 ? '#a78bfa' : score > 40 ? '#fbbf24' : '#f87171');
+  document.getElementById('log-count').textContent = appState.logs.length + ' event' + (appState.logs.length !== 1 ? 's' : '');
+}
+
+function addLog(type, title, detail, time) {
+  appState.logs.unshift({ type, title, detail, time });
+  var list = document.getElementById('log-list');
+  if (list.querySelector('.no-logs')) list.innerHTML = '';
+  var iconClass = type === 'threat' ? 'li-threat' : type === 'bot' ? 'li-bot' : 'li-pass';
+  var icon = type === 'threat' ? '&#9888;' : type === 'bot' ? '&#129302;' : '&#10003;';
+  var item = document.createElement('div');
+  item.className = 'log-item';
+  item.innerHTML =
+    '<div class="log-icon ' + iconClass + '">' + icon + '</div>' +
+    '<div><div class="log-title">' + esc(title) + '</div>' +
+    '<div class="log-detail">' + esc(detail) + '</div>' +
+    '<div class="log-time">' + time + '</div></div>';
+  list.prepend(item);
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
+HTMLEOF
+echo "Done"
